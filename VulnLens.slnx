@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VulnLens.Core/VulnLens.Core.csproj" />
+    <Project Path="src/VulnLens.Infrastructure/VulnLens.Infrastructure.csproj" />
+    <Project Path="src/VulnLens.Api/VulnLens.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VulnLens.Tests/VulnLens.Tests.csproj" />
+  </Folder>
+</Solution>

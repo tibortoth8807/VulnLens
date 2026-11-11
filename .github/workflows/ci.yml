@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # Pin this to a specific version (or digest) for reproducible scans.
+  TRIVY_IMAGE: aquasec/trivy:latest
+  # Stable artifact name, so VulnLens can compare scans across commits (/api/diff).
+  SCAN_TARGET: vulnlens-api:main
+
+jobs:
+  build-test:
+    name: Build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore VulnLens.slnx
+
+      - name: Build
+        run: dotnet build VulnLens.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test VulnLens.slnx -c Release --no-build --logger trx --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm install
+          npm run build
+
+  image-scan:
+    name: Docker image + Trivy scan (dogfooding)
+    needs: build-test
+    runs-on: ubuntu-latest
+    env:
+      # Job-level so the step "if" below can see it. Empty when the secret is not set.
+      VULNLENS_URL: ${{ secrets.VULNLENS_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build -f src/VulnLens.Api/Dockerfile -t vulnlens-api:${{ github.sha }} -t $SCAN_TARGET .
+
+      - name: Scan image with Trivy (JSON report)
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD":/out \
+            $TRIVY_IMAGE image --format json --output /out/trivy-results.json $SCAN_TARGET
+
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: trivy-results.json
+
+      # Dogfooding: send our own scan to a running VulnLens instance.
+      # Set the repository secrets VULNLENS_URL (e.g. https://vulnlens.example.com) and VULNLENS_API_KEY to enable.
+      - name: Send report to VulnLens
+        if: ${{ env.VULNLENS_URL != '' }}
+        env:
+          VULNLENS_API_KEY: ${{ secrets.VULNLENS_API_KEY }}
+        run: |
+          curl --fail-with-body -sS -X POST "$VULNLENS_URL/api/scans/trivy" \
+            -H "Content-Type: application/json" \
+            -H "X-Api-Key: $VULNLENS_API_KEY" \
+            --data-binary @trivy-results.json
+
+      # Security gate: report-only for now. Remove continue-on-error to fail the build on fixable CRITICAL findings.
+      - name: Gate on fixable CRITICAL vulnerabilities
+        continue-on-error: true
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            $TRIVY_IMAGE image --severity CRITICAL --ignore-unfixed --exit-code 1 $SCAN_TARGET

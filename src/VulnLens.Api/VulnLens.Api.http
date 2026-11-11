@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:8080
+
+### Import the sample Trivy report
+POST {{baseUrl}}/api/scans/trivy
+Content-Type: application/json
+
+< ../../samples/trivy-sample.json
+
+### List scans
+GET {{baseUrl}}/api/scans
+
+### Latest findings, High and above
+GET {{baseUrl}}/api/findings?minSeverity=High
+
+### What changed since the previous scan
+GET {{baseUrl}}/api/diff?artifact=vulnlens-demo:latest

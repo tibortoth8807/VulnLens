@@ -1,0 +1,54 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-11-10T09:15:00.000000+01:00",
+  "ArtifactName": "vulnlens-demo:latest",
+  "ArtifactType": "container_image",
+  "Results": [
+    {
+      "Target": "vulnlens-demo:latest (debian 12.7)",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2024-0001",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.0.14-1~deb12u1",
+          "FixedVersion": "3.0.15-1~deb12u1",
+          "Severity": "CRITICAL",
+          "Title": "openssl: example critical issue (sample data)"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-0002",
+          "PkgName": "zlib1g",
+          "InstalledVersion": "1:1.2.13.dfsg-1",
+          "FixedVersion": "",
+          "Severity": "MEDIUM",
+          "Title": "zlib: example medium issue (sample data)"
+        }
+      ]
+    },
+    {
+      "Target": "app/VulnLens.Api.deps.json",
+      "Class": "lang-pkgs",
+      "Type": "dotnet-core",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2024-0003",
+          "PkgName": "System.Text.Json",
+          "InstalledVersion": "8.0.0",
+          "FixedVersion": "8.0.5",
+          "Severity": "HIGH",
+          "Title": "System.Text.Json: example high issue (sample data)"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-0003",
+          "PkgName": "System.Text.Json",
+          "InstalledVersion": "8.0.0",
+          "FixedVersion": "8.0.5",
+          "Severity": "HIGH",
+          "Title": "Duplicate entry from another target - must be de-duplicated"
+        }
+      ]
+    }
+  ]
+}

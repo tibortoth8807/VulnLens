@@ -1,0 +1,45 @@
+# docker compose up --build
+#   UI:     http://localhost:3000
+#   API:    http://localhost:8080  (health: /health)
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: vulnlens
+      POSTGRES_USER: vulnlens
+      POSTGRES_PASSWORD: vulnlens
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vulnlens -d vulnlens"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: src/VulnLens.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__VulnLens: "Host=db;Port=5432;Database=vulnlens;Username=vulnlens;Password=vulnlens"
+      # Optional: set VULNLENS_API_KEY in a .env file to protect uploads.
+      Ingest__ApiKey: ${VULNLENS_API_KEY:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
