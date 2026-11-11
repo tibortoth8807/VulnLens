@@ -1,6 +1,6 @@
 # VulnLens
 
-![CI](https://github.com/<your-github-user>/vulnlens/actions/workflows/ci.yml/badge.svg)
+   ![CI](https://github.com/tibortoth8807/VulnLens/actions/workflows/ci.yml/badge.svg)
 
 **VulnLens collects container vulnerability scan reports (Trivy), de-duplicates them and shows what changed between scans.**
 It scans **its own Docker image** in CI and can send the result to itself (dogfooding).
@@ -30,7 +30,7 @@ flowchart LR
 | `VulnLens.Core` | Domain model (`Scan`, `Finding`, `Severity`), report parsers, fingerprinting. No framework dependencies. |
 | `VulnLens.Infrastructure` | EF Core `DbContext`, PostgreSQL mapping, DB initialization. |
 | `VulnLens.Api` | Minimal API endpoints, ingestion API key, OpenAPI document. |
-| `frontend/` | Vue 3 + PrimeVue dashboard (scans, latest findings, upload). |
+| `frontend/` | Vue 3 + PrimeVue dashboard (scans, latest findings, scan diff, upload). |
 | `tests/VulnLens.Tests` | Unit tests for parsing and de-duplication. |
 
 ### De-duplication
