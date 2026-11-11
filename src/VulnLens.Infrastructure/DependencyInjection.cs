@@ -15,21 +15,13 @@ public static class DependencyInjection
     }
 
     /// <summary>
-    /// Applies EF migrations if there are any; otherwise creates the schema directly.
-    /// The fallback keeps the skeleton runnable before the first migration is generated.
+    /// Applies pending EF Core migrations to ensure the database schema is up-to-date.
     /// </summary>
     public static async Task InitializeDatabaseAsync(this IServiceProvider services, CancellationToken cancellationToken = default)
     {
         await using var scope = services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<VulnLensDbContext>();
 
-        if (db.Database.GetMigrations().Any())
-        {
-            await db.Database.MigrateAsync(cancellationToken);
-        }
-        else
-        {
-            await db.Database.EnsureCreatedAsync(cancellationToken);
-        }
+        await db.Database.MigrateAsync(cancellationToken);
     }
 }

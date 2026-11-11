@@ -89,7 +89,7 @@ dotnet test VulnLens.slnx
 
 ## Roadmap
 
-- [ ] EF Core migrations instead of `EnsureCreated`
+- [x] EF Core migrations instead of `EnsureCreated`
 - [ ] Integration tests with `WebApplicationFactory` + Testcontainers (PostgreSQL)
 - [ ] SARIF and Grype parsers
 - [ ] Watched-folder import with a `BackgroundService`
